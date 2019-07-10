@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,77 +15,67 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace Strings.CSharp
 {
+	internal class Program
+	{
+		private static void Main(string[] args)
+		{
+			var tree = CSharpSyntaxTree.ParseText(
+@"using System;
+using System.Collections;
+using System.Linq;
+using System.Text;
+ 
+namespace HelloWorld
+{
 	class Program
 	{
-		static async Task Main(string[] args)
+		static void Main(string[] args)
 		{
-			// Attempt to set the version of MSBuild.
-			var visualStudioInstances = MSBuildLocator.QueryVisualStudioInstances().ToArray();
-			var instance = visualStudioInstances.Length == 1
-				// If there is only one instance of MSBuild on this machine, set that as the one to use.
-				? visualStudioInstances[0]
-				// Handle selecting the version of MSBuild you want to use.
-				: SelectVisualStudioInstance(visualStudioInstances);
+			Console.WriteLine(""Hello, World!"");
+			Console.WriteLine(@""Hello, World!"");
+			Console.WriteLine($""Hello, {1}!"");
+			Console.WriteLine($@""Hello, {1}!"");
+		}
+	}
+}");
 
-			Console.WriteLine($"Using MSBuild at '{instance.MSBuildPath}' to load projects.");
+			var root = (CompilationUnitSyntax)tree.GetRoot();
+			var collector = new StringCollector();
+			root.Accept(collector);
 
-			// NOTE: Be sure to register an instance with the MSBuildLocator 
-			//       before calling MSBuildWorkspace.Create()
-			//       otherwise, MSBuildWorkspace won't MEF compose.
-			MSBuildLocator.RegisterInstance(instance);
-
-			using (var workspace = MSBuildWorkspace.Create())
+			var expressions = collector.Expressions.OrderBy(expr => expr.GetFirstToken().SpanStart);
+			foreach (var expr in expressions)
 			{
-				// Print message for WorkspaceFailed event to help diagnosing project load failures.
-				workspace.WorkspaceFailed += (o, e) => Console.WriteLine(e.Diagnostic.Message);
+				Console.WriteLine(expr);
+			}
 
-				var solutionPath = args[0];
-				Console.WriteLine($"Loading solution '{solutionPath}'");
-
-				// Attach progress reporter so we print projects as they are loaded.
-				var solution = await workspace.OpenSolutionAsync(solutionPath, new ConsoleProgressReporter());
-				Console.WriteLine($"Finished loading solution '{solutionPath}'");
-
-				// TODO: Do analysis on the projects in the loaded solution
+			if (Debugger.IsAttached)
+			{
+				Console.WriteLine("Done.");
+				Console.ReadKey();
 			}
 		}
+	}
 
-		private static VisualStudioInstance SelectVisualStudioInstance(VisualStudioInstance[] visualStudioInstances)
+	internal class StringCollector : CSharpSyntaxWalker
+	{
+		private readonly HashSet<ExpressionSyntax> expressions = new HashSet<ExpressionSyntax>();
+
+		public IEnumerable<ExpressionSyntax> Expressions => this.expressions;
+
+		public override void VisitLiteralExpression(LiteralExpressionSyntax node)
 		{
-			Console.WriteLine("Multiple installs of MSBuild detected please select one:");
-			for (int i = 0; i < visualStudioInstances.Length; i++)
+			if (node.Token.Kind() == SyntaxKind.StringLiteralToken)
 			{
-				Console.WriteLine($"Instance {i + 1}");
-				Console.WriteLine($"    Name: {visualStudioInstances[i].Name}");
-				Console.WriteLine($"    Version: {visualStudioInstances[i].Version}");
-				Console.WriteLine($"    MSBuild Path: {visualStudioInstances[i].MSBuildPath}");
+				this.expressions.Add(node);
 			}
-
-			while (true)
-			{
-				var userResponse = Console.ReadLine();
-				if (int.TryParse(userResponse, out int instanceNumber) &&
-					instanceNumber > 0 &&
-					instanceNumber <= visualStudioInstances.Length)
-				{
-					return visualStudioInstances[instanceNumber - 1];
-				}
-				Console.WriteLine("Input not accepted, try again.");
-			}
+			base.VisitLiteralExpression(node);
 		}
 
-		private class ConsoleProgressReporter : IProgress<ProjectLoadProgress>
+		public override void VisitInterpolatedStringExpression(InterpolatedStringExpressionSyntax node)
 		{
-			public void Report(ProjectLoadProgress loadProgress)
-			{
-				var projectDisplay = Path.GetFileName(loadProgress.FilePath);
-				if (loadProgress.TargetFramework != null)
-				{
-					projectDisplay += $" ({loadProgress.TargetFramework})";
-				}
-
-				Console.WriteLine($"{loadProgress.Operation,-15} {loadProgress.ElapsedTime,-15:m\\:ss\\.fffffff} {projectDisplay}");
-			}
+			this.expressions.Add(node);
+			base.VisitInterpolatedStringExpression(node);
 		}
 	}
 }
