@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Razor", "Strings.Razor\Strings.Razor.csproj", "{E4361F1B-E94B-4240-8682-D117F1437E6D}"
 EndProject
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Strings.Typescript", "Strings.Typescript\Strings.Typescript.njsproj", "{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{E4361F1B-E94B-4240-8682-D117F1437E6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E4361F1B-E94B-4240-8682-D117F1437E6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E4361F1B-E94B-4240-8682-D117F1437E6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

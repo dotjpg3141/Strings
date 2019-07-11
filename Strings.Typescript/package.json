@@ -1,0 +1,15 @@
+{
+  "name": "strings.typescript",
+  "version": "0.0.0",
+  "description": "Strings.Typescript",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.14"
+  },
+  "dependencies": {
+    "typescript": "^3.5.3"
+  }
+}
