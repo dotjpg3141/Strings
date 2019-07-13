@@ -14,6 +14,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Razor", "Strings.Ra
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Strings.Typescript", "Strings.Typescript\Strings.Typescript.njsproj", "{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6A02B70B-B5FB-4B90-A880-6A6A05723CFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.CSharp.Test", "Strings.CSharp.Test\Strings.CSharp.Test.csproj", "{4E0701B9-A392-4D40-94B0-177B6BC436CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,9 +36,16 @@ Global
 		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E0701B9-A392-4D40-94B0-177B6BC436CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E0701B9-A392-4D40-94B0-177B6BC436CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E0701B9-A392-4D40-94B0-177B6BC436CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E0701B9-A392-4D40-94B0-177B6BC436CE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4E0701B9-A392-4D40-94B0-177B6BC436CE} = {6A02B70B-B5FB-4B90-A880-6A6A05723CFD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {697D79A3-DE60-494F-8FEA-F71F01364373}
