@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6A02B70B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.CSharp.Test", "Strings.CSharp.Test\Strings.CSharp.Test.csproj", "{4E0701B9-A392-4D40-94B0-177B6BC436CE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Razor.Test", "Strings.Razor.Test\Strings.Razor.Test.csproj", "{2F06F433-4666-42FB-BB57-8F08C21B1FC0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,12 +42,17 @@ Global
 		{4E0701B9-A392-4D40-94B0-177B6BC436CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4E0701B9-A392-4D40-94B0-177B6BC436CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4E0701B9-A392-4D40-94B0-177B6BC436CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F06F433-4666-42FB-BB57-8F08C21B1FC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F06F433-4666-42FB-BB57-8F08C21B1FC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F06F433-4666-42FB-BB57-8F08C21B1FC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F06F433-4666-42FB-BB57-8F08C21B1FC0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4E0701B9-A392-4D40-94B0-177B6BC436CE} = {6A02B70B-B5FB-4B90-A880-6A6A05723CFD}
+		{2F06F433-4666-42FB-BB57-8F08C21B1FC0} = {6A02B70B-B5FB-4B90-A880-6A6A05723CFD}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {697D79A3-DE60-494F-8FEA-F71F01364373}
