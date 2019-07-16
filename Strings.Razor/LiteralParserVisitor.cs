@@ -13,11 +13,11 @@ namespace Strings.Razor
 		public string Path { get; set; }
 		public List<SearchResult> Results { get; } = new List<SearchResult>();
 
-		private ParseState state = ParseState.Default;
-		private List<HtmlSymbol> symbols = new List<HtmlSymbol>();
+		private ParseState parseState = ParseState.Default;
+		private List<HtmlSymbol> symbolsWithoutWhitespace = new List<HtmlSymbol>();
 
-		private string lastAttribute;
-		private List<ISymbol> lastTexts = new List<ISymbol>();
+		private string lastVisitedAttribute;
+		private List<ISymbol> textSymbols = new List<ISymbol>();
 		private ParseState textState;
 
 		public override void VisitSpan(Span span)
@@ -25,6 +25,13 @@ namespace Strings.Razor
 			switch (span.Kind)
 			{
 				case SpanKind.Code:
+
+					var capturesText = this.textSymbols != null;
+					if (capturesText)
+					{
+						EndText();
+					}
+
 					var text = span.Content;
 					var postion = span.Start;
 
@@ -42,11 +49,17 @@ namespace Strings.Razor
 						this.Results.Add(item);
 					}
 
+					if (capturesText)
+					{
+						BeginText();
+					}
+
 					break;
 
 				case SpanKind.Markup:
 					foreach (var symbol in span.Symbols.OfType<HtmlSymbol>())
 					{
+						symbol.OffsetStart(span.Start);
 						VisitHtmlSymbol(symbol);
 					}
 					break;
@@ -57,70 +70,79 @@ namespace Strings.Razor
 
 		private void VisitHtmlSymbol(HtmlSymbol symbol)
 		{
-			Console.WriteLine(symbol);
+			bool ommitTextCharacter = false;
 
 			switch (symbol.Type)
 			{
-				case HtmlSymbolType.OpenAngle when this.state == ParseState.Default:
-					this.state = ParseState.InsideTag;
+				case HtmlSymbolType.OpenAngle when this.parseState == ParseState.Default:
+					this.parseState = ParseState.InsideTag;
 					break;
 
-				case HtmlSymbolType.CloseAngle when this.state == ParseState.InsideTag:
-					this.state = ParseState.Default;
+				case HtmlSymbolType.CloseAngle when this.parseState == ParseState.InsideTag:
+					this.parseState = ParseState.Default;
 					break;
 
-				case HtmlSymbolType.SingleQuote when this.state == ParseState.InsideTag:
-				case HtmlSymbolType.DoubleQuote when this.state == ParseState.InsideTag:
-					if (this.symbols.Count >= 3)
+				case HtmlSymbolType.SingleQuote when this.parseState == ParseState.InsideTag:
+				case HtmlSymbolType.DoubleQuote when this.parseState == ParseState.InsideTag:
+					if (this.symbolsWithoutWhitespace.Count >= 3)
 					{
-						var a = this.symbols[this.symbols.Count - 2];
-						var b = this.symbols[this.symbols.Count - 1];
+						var a = this.symbolsWithoutWhitespace[this.symbolsWithoutWhitespace.Count - 2];
+						var b = this.symbolsWithoutWhitespace[this.symbolsWithoutWhitespace.Count - 1];
 
 						if (a.Type == HtmlSymbolType.Text && b.Type == HtmlSymbolType.Equals)
 						{
-							this.lastAttribute = a.Content;
-							this.state = symbol.Type == HtmlSymbolType.SingleQuote
+							this.lastVisitedAttribute = a.Content;
+							this.parseState = symbol.Type == HtmlSymbolType.SingleQuote
 								? ParseState.InsideSingleQuoteAttribute
 								: ParseState.InsideDoubleQuoteAttribute;
+							ommitTextCharacter = true;
 							BeginText();
 						}
 					}
 					break;
 
-				case HtmlSymbolType.SingleQuote when this.state == ParseState.InsideSingleQuoteAttribute:
-				case HtmlSymbolType.DoubleQuote when this.state == ParseState.InsideDoubleQuoteAttribute:
-					this.state = ParseState.InsideTag;
+				case HtmlSymbolType.SingleQuote when this.parseState == ParseState.InsideSingleQuoteAttribute:
+				case HtmlSymbolType.DoubleQuote when this.parseState == ParseState.InsideDoubleQuoteAttribute:
+					this.parseState = ParseState.InsideTag;
 					break;
 
-				case HtmlSymbolType.Text when this.state == ParseState.Default:
+				case HtmlSymbolType.Text when this.parseState == ParseState.Default:
 					BeginText();
 					break;
 			}
 
-			if (this.state == this.textState)
+			if (this.parseState == this.textState)
 			{
-				this.lastTexts?.Add(symbol);
+				if (this.textSymbols != null && !ommitTextCharacter)
+				{
+					this.textSymbols.Add(symbol);
+				}
 			}
 			else
 			{
 				EndText();
 			}
 
-			if (symbol.Type != HtmlSymbolType.WhiteSpace && symbol.Type != HtmlSymbolType.NewLine)
+			bool isWhitespace = symbol.Type == HtmlSymbolType.WhiteSpace
+							 || symbol.Type == HtmlSymbolType.NewLine;
+			if (!isWhitespace)
 			{
-				this.symbols.Add(symbol);
+				this.symbolsWithoutWhitespace.Add(symbol);
 			}
 		}
 
 		private void BeginText()
 		{
-			this.textState = this.state;
-			this.lastTexts = new List<ISymbol>();
+			this.textState = this.parseState;
+			if (this.textSymbols == null)
+			{
+				this.textSymbols = new List<ISymbol>();
+			}
 		}
 
 		internal void EndText()
 		{
-			if (this.lastTexts != null && this.lastTexts.Count != 0)
+			if (this.textSymbols != null && this.textSymbols.Count != 0)
 			{
 				string source2;
 				string source3;
@@ -134,20 +156,20 @@ namespace Strings.Razor
 					case ParseState.InsideSingleQuoteAttribute:
 					case ParseState.InsideDoubleQuoteAttribute:
 						source2 = "attribute";
-						source3 = this.lastAttribute;
+						source3 = this.lastVisitedAttribute;
 						break;
 
 					default:
 						throw new InvalidOperationException();
 				}
 
-				HandleTextSymbol(this.lastTexts, source2, source3);
+				HandleTextSymbols(this.textSymbols, source2, source3);
 			}
 
-			this.lastTexts = null;
+			this.textSymbols = null;
 		}
 
-		private void HandleTextSymbol(List<ISymbol> symbols, string source2, string source3)
+		private void HandleTextSymbols(List<ISymbol> symbols, string source2, string source3)
 		{
 			var content = string.Concat(symbols.Select(sym => sym.Content));
 			if (string.IsNullOrWhiteSpace(content))
