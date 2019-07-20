@@ -19,6 +19,38 @@ namespace Strings.Common
 		public string Source2 { get; set; }
 		public string Source3 { get; set; }
 
+		public string Extension
+		{
+			get
+			{
+				// NOTE(jpg): Path.GetExtension returns for file "foo.d.ts" the extension ".ts"
+				// but required is the extension ".d.ts"
+
+				var name = System.IO.Path.GetFileName(this.Path);
+
+				int index = GetStartIndex();
+				var extension = index == -1 ? "" : name.Substring(index);
+				return extension.ToLowerInvariant();
+
+				int GetStartIndex()
+				{
+					int dotIndex1 = name.LastIndexOf('.');
+					if (dotIndex1 == -1 || dotIndex1 == 0)
+					{
+						return dotIndex1;
+					}
+
+					int dotIndex2 = name.LastIndexOf('.', dotIndex1 - 1);
+					if (dotIndex2 == -1)
+					{
+						return dotIndex1;
+					}
+
+					return dotIndex2;
+				}
+			}
+		}
+
 		public void WriteTo(TextWriter writer)
 		{
 			WriteLengthEncoded(this.Path);
@@ -101,6 +133,7 @@ namespace Strings.Common
 		public static void WriteCsvHeader(TextWriter writer)
 		{
 			WriteCsvCell(writer, nameof(Path));
+			WriteCsvCell(writer, nameof(Extension));
 			WriteCsvCell(writer, "Length");
 			WriteCsvCell(writer, nameof(Line));
 			WriteCsvCell(writer, nameof(Character));
@@ -116,6 +149,7 @@ namespace Strings.Common
 			var text = this.Text?.Trim() ?? "";
 
 			WriteCsvCell(writer, System.IO.Path.GetFullPath(this.Path));
+			WriteCsvCell(writer, this.Extension);
 			WriteCsvCell(writer, text.Length);
 			WriteCsvCell(writer, this.Line);
 			WriteCsvCell(writer, this.Character);
