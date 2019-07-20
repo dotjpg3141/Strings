@@ -12,14 +12,14 @@ namespace Strings.Razor
 	{
 		private static int Main(string[] args)
 		{
-			if (args.Length == 0)
+			if (args.Length != 2)
 			{
-				Console.Error.WriteLine("Expected at least two arguments: <output-file> <input-file-1> [ .. <input-file-n> ]");
+				Console.Error.WriteLine("Expected exactly two arguments: <input-file> <output-file>");
 				return 1;
 			}
 
-			var outputPath = args[0];
-			var inputPaths = args.Skip(1);
+			var inputPaths = File.ReadAllLines(args[0]);
+			var outputPath = args[1];
 
 			using (var output = new StreamWriter(outputPath, true, Encoding.UTF8))
 			{
