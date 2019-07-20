@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Web.Razor.Parser;
+using Strings.Common;
 using Strings.CSharp;
 
 namespace Strings.Razor

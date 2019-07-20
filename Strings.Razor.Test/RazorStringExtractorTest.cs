@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Strings.Common;
 using Strings.CSharp;
 
 namespace Strings.Razor.Test

@@ -57,6 +57,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Strings.Common\Strings.Common.csproj">
+      <Project>{FF95F3A0-95FB-4730-B228-23A43FCA07D2}</Project>
+      <Name>Strings.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Strings.CSharp\Strings.CSharp.csproj">
       <Project>{dc2be091-36e3-4ee6-a54b-7ef3f6794d50}</Project>
       <Name>Strings.CSharp</Name>

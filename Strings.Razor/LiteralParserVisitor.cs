@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web.Razor.Parser;
 using System.Web.Razor.Parser.SyntaxTree;
 using System.Web.Razor.Tokenizer.Symbols;
+using Strings.Common;
 using Strings.CSharp;
 
 namespace Strings.Razor

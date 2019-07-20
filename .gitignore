@@ -1,6 +1,7 @@
 ## Custom .gitignore
 *.js
 *.js.map
+*.csv
 
 ## https://raw.githubusercontent.com/github/gitignore/master/VisualStudio.gitignore
 ## Ignore Visual Studio temporary files, build results, and

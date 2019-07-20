@@ -22,6 +22,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Razor.Test", "Strin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{CE964A48-94EB-40B6-A78D-509D5CDC0AFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings", "Strings\Strings.csproj", "{7B8C2535-0945-49B7-B49D-FC530DD327CF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E4361F1B-E94B-4240-8682-D117F1437E6D} = {E4361F1B-E94B-4240-8682-D117F1437E6D}
+		{DC2BE091-36E3-4EE6-A54B-7EF3F6794D50} = {DC2BE091-36E3-4EE6-A54B-7EF3F6794D50}
+		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5} = {A12107A8-0C7D-4D4E-A6C4-925B957E20E5}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Common", "Strings.Common\Strings.Common.csproj", "{FF95F3A0-95FB-4730-B228-23A43FCA07D2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,6 +57,14 @@ Global
 		{2F06F433-4666-42FB-BB57-8F08C21B1FC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F06F433-4666-42FB-BB57-8F08C21B1FC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F06F433-4666-42FB-BB57-8F08C21B1FC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B8C2535-0945-49B7-B49D-FC530DD327CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B8C2535-0945-49B7-B49D-FC530DD327CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B8C2535-0945-49B7-B49D-FC530DD327CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B8C2535-0945-49B7-B49D-FC530DD327CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF95F3A0-95FB-4730-B228-23A43FCA07D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF95F3A0-95FB-4730-B228-23A43FCA07D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF95F3A0-95FB-4730-B228-23A43FCA07D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF95F3A0-95FB-4730-B228-23A43FCA07D2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
