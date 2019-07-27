@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Strings.Common;
 
 namespace Strings
@@ -29,22 +29,30 @@ namespace Strings
 				FileExtensions = new[] { ".ts", ".tsx" },
 				FileName = "node",
 				ArgumentsFormat = "components/typescript/app.js {0} {1}",
+				IsRelativeFileName = true,
 			},
 		};
+
+		private static readonly Dictionary<string, SearchProvider> ProvidersByExtension =
+			(from provider in Providers
+			 from extension in provider.FileExtensions
+			 select new { provider, extension })
+				.ToDictionary(
+					item => item.extension.ToLowerInvariant(),
+					item => item.provider
+				);
 
 		public IEnumerable<string> FileExtensions { get; set; }
 		public string Name { get; set; }
 		public string FileName { get; set; }
 		public string ArgumentsFormat { get; set; }
+		public bool IsRelativeFileName { get; set; }
 
 		public static SearchProvider ByPath(string path)
 		{
-			var query = from provider in Providers
-						from extension in provider.FileExtensions
-						select Tuple.Create(provider, extension);
-
 			var pathExtension = Path.GetExtension(path).ToLowerInvariant();
-			return query.SingleOrDefault(tuple => tuple.Item2 == pathExtension)?.Item1;
+			ProvidersByExtension.TryGetValue(pathExtension, out var provider);
+			return provider;
 		}
 
 		public IEnumerable<SearchResult> Run(IEnumerable<string> paths)
@@ -55,7 +63,7 @@ namespace Strings
 			var process = new Process()
 			{
 				StartInfo = {
-					FileName = FileName,
+					FileName = GetFileName(),
 					Arguments = string.Format(this.ArgumentsFormat, PathHelper.Quote(inputFile), PathHelper.Quote(outputFile)),
 					UseShellExecute = false,
 					RedirectStandardOutput = true,
@@ -110,6 +118,19 @@ namespace Strings
 			File.Delete(outputFile);
 
 			return result;
+		}
+
+		private string GetFileName()
+		{
+			if (this.IsRelativeFileName)
+			{
+				return this.FileName;
+			}
+
+			var executablePath = Assembly.GetExecutingAssembly().Location;
+			var baseDirectory = Path.GetDirectoryName(executablePath);
+			var fileName = Path.Combine(baseDirectory, this.FileName);
+			return fileName;
 		}
 
 		private static string CreateFileListInput(IEnumerable<string> paths)

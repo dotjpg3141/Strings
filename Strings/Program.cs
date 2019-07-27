@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Strings.Common;
 
 namespace Strings
@@ -44,6 +43,7 @@ namespace Strings
 
 		private static void WriteOutputFile(IEnumerable<SearchResult> result, string path)
 		{
+			Console.WriteLine("Writing result to " + Path.GetFullPath(path));
 			using (var writer = new StreamWriter(path, false, Encoding.UTF8))
 			{
 				writer.WriteLine("sep=,");
@@ -58,21 +58,22 @@ namespace Strings
 		private static List<SearchResult> ExecuteSearch(string[] input, string[] patterns)
 		{
 			var inputFilesByProviders =
-							from directory in input
-							from pattern in patterns
-							from path in Directory.EnumerateFiles(directory, pattern, SearchOption.AllDirectories)
-							orderby path.ToLowerInvariant()
-							group path by SearchProvider.ByPath(path) into filesByProvider
-							where filesByProvider.Key != null
-							orderby filesByProvider.Key.Name
-							select filesByProvider;
+				from directory in input
+				from pattern in patterns
+				from path in Directory.EnumerateFiles(directory, pattern, SearchOption.AllDirectories)
+				group path by SearchProvider.ByPath(path) into filesByProvider
+				where filesByProvider.Key != null
+				orderby filesByProvider.Key.Name
+				select filesByProvider;
 
 			var searchResult = new List<SearchResult>();
 
 			foreach (var filesByProvider in inputFilesByProviders)
 			{
 				var provider = filesByProvider.Key;
-				var result = provider.Run(filesByProvider);
+				var files = filesByProvider.OrderBy(file => file.ToLowerInvariant());
+
+				var result = provider.Run(files);
 				searchResult.AddRange(result);
 			}
 
