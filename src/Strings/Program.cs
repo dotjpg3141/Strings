@@ -17,7 +17,7 @@ namespace Strings
 				if (args.Length == 0)
 				{
 					Console.Error.WriteLine("Using debugging command line arguments");
-					args = new[] { @"--input=..\..\..\..\examples" };
+					args = new[] { @"--input=.\examples" };
 				}
 
 				int returnCode = Run(args);
@@ -41,13 +41,13 @@ namespace Strings
 
 		private static int Run(string[] args)
 		{
-			if (!TryParseArguments(args, out var input, out string output, out var patterns))
+			if (!TryParseArguments(args, out var cli))
 			{
 				return 1;
 			}
 
-			var searchResult = ExecuteSearch(input, patterns);
-			WriteOutputFile(searchResult, output);
+			var searchResult = ExecuteSearch(cli.Input, cli.Patterns, cli.Sync);
+			WriteOutputFile(searchResult, cli.Output);
 			return 1;
 		}
 
@@ -65,36 +65,39 @@ namespace Strings
 			}
 		}
 
-		private static List<SearchResult> ExecuteSearch(string[] input, string[] patterns)
+		private static IEnumerable<SearchResult> ExecuteSearch(string[] input, string[] patterns, bool sync)
 		{
-			var inputFilesByProviders =
-				from directory in input
+			// See: https://referencesource.microsoft.com/#System.Core/System/Linq/Parallel/Scheduling/Scheduling.cs,df4daefa7f756d38,references
+			var cpuCount = sync ? 1 : Math.Min(512, Environment.ProcessorCount);
+
+			var inputFiles =
+				from directory in input.AsParallel().WithDegreeOfParallelism(cpuCount)
 				from pattern in patterns
 				from path in Directory.EnumerateFiles(directory, pattern, SearchOption.AllDirectories)
-				group path by SearchProvider.ByPath(path) into filesByProvider
-				where filesByProvider.Key != null
-				orderby filesByProvider.Key.Name
-				select filesByProvider;
+				select path;
 
-			var searchResult = new List<SearchResult>();
+			var filesByProvider =
+				from path in inputFiles
+				group path by SearchProvider.ByPath(path) into filesByProviderGroup
+				where filesByProviderGroup.Key != null
+				select new { provider = filesByProviderGroup.Key, files = filesByProviderGroup };
 
-			foreach (var filesByProvider in inputFilesByProviders)
-			{
-				var provider = filesByProvider.Key;
-				var files = filesByProvider.OrderBy(file => file.ToLowerInvariant());
+			var searchResults =
+				from item in filesByProvider
+				from result in item.provider.Run(item.files)
+				let normalizedPath = Path.GetFullPath(result.Path ?? ".").ToLowerInvariant()
+				orderby normalizedPath, result.StartIndex
+				select result;
 
-				var result = provider.Run(files);
-				searchResult.AddRange(result);
-			}
-
-			return searchResult;
+			return searchResults;
 		}
 
-		private static bool TryParseArguments(string[] args, out string[] input, out string output, out string[] patterns)
+		private static bool TryParseArguments(string[] args, out CliArguments result)
 		{
-			input = new[] { Environment.CurrentDirectory };
-			output = "result.csv";
-			patterns = new[] { "*.*" };
+			result.Input = new[] { Environment.CurrentDirectory };
+			result.Output = "result.csv";
+			result.Patterns = new[] { "*.*" };
+			result.Sync = false;
 
 			bool printUsage = args.Select(item => item.ToLowerInvariant()).Intersect(new[] { "-h", "--help", "/help", "/?" }).Any();
 			if (printUsage)
@@ -106,13 +109,35 @@ namespace Strings
 			{
 				var match = arg.ToLowerInvariant();
 
-				var knownArgument = TryMatchArray("input", ref input, "Input directories")
-								 || TryMatchParameter("output", ref output, "Output file (.csv)")
-								 || TryMatchArray("patterns", ref patterns, "Included file patterns");
+				var knownArgument = TryMatchArray("input", ref result.Input, "Input directories")
+								 || TryMatchParameter("output", ref result.Output, "Output file (.csv)")
+								 || TryMatchArray("patterns", ref result.Patterns, "Included file patterns")
+								 || TryMatchFlag("sync", ref result.Sync, "Synchronized or parallel execution");
 
 				if (!knownArgument && !printUsage)
 				{
 					Console.Error.WriteLine("Invalid argument: " + arg);
+				}
+
+				bool TryMatchFlag(string name, ref bool parameter, string description)
+				{
+					if (printUsage && description != null)
+					{
+						Console.Error.WriteLine($"\t--{name}");
+						Console.Error.WriteLine($"\t\t{description}");
+						Console.Error.WriteLine("\t\tDefault: " + parameter);
+						return false;
+					}
+
+					if (match == "--" + name)
+					{
+						parameter = true;
+						return true;
+					}
+					else
+					{
+						return false;
+					}
 				}
 
 				bool TryMatchParameter(string name, ref string parameter, string description)
@@ -122,6 +147,7 @@ namespace Strings
 						Console.Error.WriteLine($"\t--{name}=<value>");
 						Console.Error.WriteLine($"\t\t{description}");
 						Console.Error.WriteLine("\t\tDefault: " + parameter);
+						return false;
 					}
 
 					var prefix = "--" + name + "=";
@@ -143,6 +169,7 @@ namespace Strings
 						Console.Error.WriteLine($"\t--{name}=<value1,value2,...>");
 						Console.Error.WriteLine($"\t\t{description}");
 						Console.Error.WriteLine("\t\tDefault: " + string.Join(",", array));
+						return false;
 					}
 
 					string parameter = null;
@@ -162,6 +189,14 @@ namespace Strings
 			}
 
 			return !printUsage;
+		}
+
+		private struct CliArguments
+		{
+			public string[] Input;
+			public string Output;
+			public string[] Patterns;
+			public bool Sync;
 		}
 	}
 }

@@ -69,7 +69,7 @@ namespace Strings
 		{
 			if (!paths.Any())
 			{
-				return Enumerable.Empty<SearchResult>();
+				yield break;
 			}
 
 			var inputFile = CreateFileListInput(paths);
@@ -122,7 +122,6 @@ namespace Strings
 			process.WaitForExit();
 
 			Console.WriteLine(this.Name + " terminated with return code " + process.ExitCode);
-			Console.WriteLine();
 
 			if (process.ExitCode != 0)
 			{
@@ -134,14 +133,12 @@ namespace Strings
 			{
 				while (!reader.EndOfStream)
 				{
-					result.Add(SearchResult.ReadFrom(reader));
+					yield return SearchResult.ReadFrom(reader);
 				}
 			}
 
 			File.Delete(inputFile);
 			File.Delete(outputFile);
-
-			return result;
 		}
 
 		private static string CreateFileListInput(IEnumerable<string> paths)
