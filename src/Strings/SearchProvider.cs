@@ -15,27 +15,26 @@ namespace Strings
 			new SearchProvider() {
 				Name = "csharp",
 				FileExtensions = new[] { ".cs" },
-				FileName = "components/csharp/Strings.CSharp.exe",
-				ArgumentsFormat = "{0} {1}",
+				FileName = "{directory}/components/csharp/Strings.CSharp.exe",
+				Arguments = "{input} {output}",
 			},
 			new SearchProvider() {
 				Name = "razor",
 				FileExtensions = new[] { ".cshtml" },
-				FileName = "components/razor/Strings.Razor.exe",
-				ArgumentsFormat = "{0} {1}",
+				FileName = "{directory}/components/razor/Strings.Razor.exe",
+				Arguments = "{input} {output}",
 			},
 			new SearchProvider() {
 				Name = "typescript",
 				FileExtensions = new[] { ".ts", ".tsx", ".js", ".jsx", ".json" },
 				FileName = "node",
-				ArgumentsFormat = "components/typescript/app.js {0} {1}",
-				IsRelativeFileName = true,
+				Arguments = "\"{directory}/components/typescript/app.js\" {input} {output}",
 			},
 			new SearchProvider() {
 				Name = "tsql",
 				FileExtensions = new[]{ ".sql", ".csql" },
-				FileName = "components/tsql/Strings.Tsql.exe",
-				ArgumentsFormat = "{0} {1}",
+				FileName = "{directory}/components/tsql/Strings.Tsql.exe",
+				Arguments = "{input} {output}",
 			}
 		};
 
@@ -51,8 +50,7 @@ namespace Strings
 		public IEnumerable<string> FileExtensions { get; set; }
 		public string Name { get; set; }
 		public string FileName { get; set; }
-		public string ArgumentsFormat { get; set; }
-		public bool IsRelativeFileName { get; set; }
+		public string Arguments { get; set; }
 
 		public static SearchProvider ByPath(string path)
 		{
@@ -69,14 +67,29 @@ namespace Strings
 
 		public IEnumerable<SearchResult> Run(IEnumerable<string> paths)
 		{
+			if (!paths.Any())
+			{
+				return Enumerable.Empty<SearchResult>();
+			}
+
 			var inputFile = CreateFileListInput(paths);
 			var outputFile = Path.GetTempFileName();
+
+			var variables = new Dictionary<string, string>()
+			{
+				["directory"] = PathHelper.GetDirectoryOfExecutable(),
+				["input"] = PathHelper.Quote(inputFile),
+				["output"] = PathHelper.Quote(outputFile),
+			};
+
+			var fileName = ResolveVariables(this.FileName, variables);
+			var arguments = ResolveVariables(this.Arguments, variables);
 
 			var process = new Process()
 			{
 				StartInfo = {
-					FileName = GetFileName(),
-					Arguments = string.Format(this.ArgumentsFormat, PathHelper.Quote(inputFile), PathHelper.Quote(outputFile)),
+					FileName = fileName,
+					Arguments = arguments,
 					UseShellExecute = false,
 					RedirectStandardOutput = true,
 					RedirectStandardError = true,
@@ -87,22 +100,21 @@ namespace Strings
 			{
 				if (!string.IsNullOrWhiteSpace(e.Data))
 				{
-					Console.Out.Write($"[{this.Name}]");
+					Console.Out.Write($"  [{this.Name}]: ");
 					Console.Out.WriteLine(e.Data);
 				}
 			};
+
 			process.ErrorDataReceived += (sender, e) =>
 			{
 				if (!string.IsNullOrWhiteSpace(e.Data))
 				{
-					Console.Error.Write($"[{this.Name}]");
+					Console.Error.Write($"  [{this.Name}]: ");
 					Console.Error.WriteLine(e.Data);
 				}
 			};
 
-			Console.WriteLine($"Files to process for {this.Name}: ");
-			Console.WriteLine(string.Join(Environment.NewLine, paths));
-			Console.WriteLine("Starting " + this.Name);
+			Console.WriteLine("Starting component " + this.Name);
 
 			process.Start();
 			process.BeginOutputReadLine();
@@ -132,19 +144,6 @@ namespace Strings
 			return result;
 		}
 
-		private string GetFileName()
-		{
-			if (this.IsRelativeFileName)
-			{
-				return this.FileName;
-			}
-
-			var executablePath = Assembly.GetExecutingAssembly().Location;
-			var baseDirectory = Path.GetDirectoryName(executablePath);
-			var fileName = Path.Combine(baseDirectory, this.FileName);
-			return fileName;
-		}
-
 		private static string CreateFileListInput(IEnumerable<string> paths)
 		{
 			var tempFile = Path.GetTempFileName();
@@ -152,10 +151,20 @@ namespace Strings
 			{
 				foreach (var path in paths)
 				{
-					writer.WriteLine(path);
+					writer.WriteLine(Path.GetFullPath(path));
 				}
 			}
 			return tempFile;
+		}
+
+		private static string ResolveVariables(string text, Dictionary<string, string> variables)
+		{
+			foreach (var item in variables)
+			{
+				text = text.Replace("{" + item.Key + "}", item.Value);
+			}
+			Debug.Assert(text.IndexOf("{") == -1 && text.IndexOf("}") == -1);
+			return text;
 		}
 	}
 }

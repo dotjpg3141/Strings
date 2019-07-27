@@ -19,6 +19,7 @@ namespace Strings.Common
 			{
 				foreach (var input in inputPaths)
 				{
+					Console.WriteLine("Reading " + input);
 					using (var extractor = createExtractor(input))
 					{
 						foreach (var result in extractor.Search())

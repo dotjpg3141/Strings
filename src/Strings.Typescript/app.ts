@@ -16,6 +16,7 @@ async function main(args: string[]) {
 
 	const stream = fs.createWriteStream(outputPath, fileOptions);
 	for (const inputPath of inputFiles) {
+		console.log("Reading " + inputPath);
 		let sourceText = fs.readFileSync(inputPath, fileOptions);
 
 		// strip BOM

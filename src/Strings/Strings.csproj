@@ -74,6 +74,9 @@
 	<CopyFiles_Tsql Include="$(SolutionDir)Strings.Tsql\bin\$(Configuration)\**\*">
 	  <InProject>false</InProject>
 	</CopyFiles_Tsql>
+	<CopyFiles_Examples Include="$(SolutionDir)..\examples\example.*">
+	  <InProject>false</InProject>
+	</CopyFiles_Examples>
   </ItemGroup>
   <Target Name="Clean">
 	<RemoveDir Directories="$(OutputPath)components" />
@@ -87,5 +90,6 @@
     <Copy SourceFiles="@(CopyFiles_Typescript)" DestinationFolder="$(OutputPath)components\typescript\%(RecursiveDir)" />
     <Copy SourceFiles="@(CopyFiles_Typescript_Node)" DestinationFolder="$(OutputPath)components\typescript\node_modules\%(RecursiveDir)" />
 	<Copy SourceFiles="@(CopyFiles_Tsql)" DestinationFolder="$(OutputPath)components\tsql\%(RecursiveDir)" />
+	<Copy SourceFiles="@(CopyFiles_Examples)" DestinationFolder="$(OutputPath)examples\%(RecursiveDir)" />
   </Target>
 </Project>
