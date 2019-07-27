@@ -53,25 +53,31 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <CopyFiles_CSharp Include="$(SolutionDir)Strings.CSharp\bin\$(Configuration)\net461\**\*">
-      <Visible>false</Visible>
-    </CopyFiles_CSharp>
-    <CopyFiles_Razor Include="$(SolutionDir)Strings.Razor\bin\$(Configuration)\**\*">
-      <Visible>false</Visible>
-    </CopyFiles_Razor>
-    <CopyFiles_Typescript Include="$(SolutionDir)Strings.Typescript\**\*.js">
-      <Visible>false</Visible>
-    </CopyFiles_Typescript>
-    <CopyFiles_Typescript_Node Include="$(SolutionDir)Strings.Typescript\node_modules\**\*">
-      <Visible>false</Visible>
-    </CopyFiles_Typescript_Node>
+	<ProjectReference Include="..\Strings.Common\Strings.Common.csproj">
+	  <Project>{ff95f3a0-95fb-4730-b228-23a43fca07d2}</Project>
+	  <Name>Strings.Common</Name>
+	</ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Strings.Common\Strings.Common.csproj">
-      <Project>{ff95f3a0-95fb-4730-b228-23a43fca07d2}</Project>
-      <Name>Strings.Common</Name>
-    </ProjectReference>
+    <CopyFiles_CSharp Include="$(SolutionDir)Strings.CSharp\bin\$(Configuration)\net461\**\*">
+	  <InProject>false</InProject>
+	</CopyFiles_CSharp>
+	<CopyFiles_Razor Include="$(SolutionDir)Strings.Razor\bin\$(Configuration)\**\*">
+	  <InProject>false</InProject>
+	</CopyFiles_Razor>
+	<CopyFiles_Typescript Include="$(SolutionDir)Strings.Typescript\**\*.js">
+	  <InProject>false</InProject>
+	</CopyFiles_Typescript>
+	<CopyFiles_Typescript_Node Include="$(SolutionDir)Strings.Typescript\node_modules\**\*">
+	  <InProject>false</InProject>
+    </CopyFiles_Typescript_Node>
   </ItemGroup>
+  <Target Name="Clean">
+	<RemoveDir Directories="$(OutputPath)components" />
+  </Target>
+  <Target Name="BeforeBuild">
+	<RemoveDir Directories="$(OutputPath)components" />
+  </Target>
   <Target Name="AfterBuild">
     <Copy SourceFiles="@(CopyFiles_CSharp)" DestinationFolder="$(OutputPath)components\csharp\%(RecursiveDir)" />
     <Copy SourceFiles="@(CopyFiles_Razor)" DestinationFolder="$(OutputPath)components\razor\%(RecursiveDir)" />

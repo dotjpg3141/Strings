@@ -16,7 +16,13 @@ async function main(args: string[]) {
 
 	const stream = fs.createWriteStream(outputPath, fileOptions);
 	for (const inputPath of inputFiles) {
-		const sourceText = fs.readFileSync(inputPath, fileOptions);
+		let sourceText = fs.readFileSync(inputPath, fileOptions);
+
+		// strip BOM
+		if (sourceText[0] === "\uFEFF") {
+			sourceText = sourceText.substr(1);
+		}
+
 		const source = ts.createSourceFile(inputPath, sourceText, ts.ScriptTarget.Latest, true);
 		const searchResult = extractStringLiterals(source);
 		const text = searchResult.map((item) => item.toString()).join("\r\n");
@@ -31,13 +37,15 @@ function extractStringLiterals(source: ts.SourceFile) {
 	return result;
 
 	function visitNode(node: ts.Node) {
+
+		console.error(ts.SyntaxKind[node.kind], node.getFullText());
+
 		switch (node.kind) {
 			case ts.SyntaxKind.StringLiteral:
+			case ts.SyntaxKind.TemplateExpression:
+			case ts.SyntaxKind.FirstTemplateToken:
 				report(node);
 				break;
-
-			case ts.SyntaxKind.TemplateExpression:
-				report(node);
 		}
 
 		ts.forEachChild(node, visitNode);

@@ -50,7 +50,13 @@ namespace Strings
 
 		public static SearchProvider ByPath(string path)
 		{
-			var pathExtension = Path.GetExtension(path).ToLowerInvariant();
+			var extension = Path.GetExtension(path);
+			return ByExtension(extension);
+		}
+
+		public static SearchProvider ByExtension(string extension)
+		{
+			var pathExtension = extension.ToLowerInvariant();
 			ProvidersByExtension.TryGetValue(pathExtension, out var provider);
 			return provider;
 		}
