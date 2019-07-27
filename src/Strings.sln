@@ -3,12 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.705
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Strings.CSharp", "Strings.CSharp\Strings.CSharp.csproj", "{DC2BE091-36E3-4EE6-A54B-7EF3F6794D50}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D764F383-C5EE-4836-9B03-7137178DCB25}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings", "Strings\Strings.csproj", "{7B8C2535-0945-49B7-B49D-FC530DD327CF}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E4361F1B-E94B-4240-8682-D117F1437E6D} = {E4361F1B-E94B-4240-8682-D117F1437E6D}
+		{DC2BE091-36E3-4EE6-A54B-7EF3F6794D50} = {DC2BE091-36E3-4EE6-A54B-7EF3F6794D50}
+		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5} = {A12107A8-0C7D-4D4E-A6C4-925B957E20E5}
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Strings.CSharp", "Strings.CSharp\Strings.CSharp.csproj", "{DC2BE091-36E3-4EE6-A54B-7EF3F6794D50}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Razor", "Strings.Razor\Strings.Razor.csproj", "{E4361F1B-E94B-4240-8682-D117F1437E6D}"
 EndProject
@@ -22,13 +24,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Razor.Test", "Strin
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Components", "Components", "{CE964A48-94EB-40B6-A78D-509D5CDC0AFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings", "Strings\Strings.csproj", "{7B8C2535-0945-49B7-B49D-FC530DD327CF}"
-	ProjectSection(ProjectDependencies) = postProject
-		{E4361F1B-E94B-4240-8682-D117F1437E6D} = {E4361F1B-E94B-4240-8682-D117F1437E6D}
-		{DC2BE091-36E3-4EE6-A54B-7EF3F6794D50} = {DC2BE091-36E3-4EE6-A54B-7EF3F6794D50}
-		{A12107A8-0C7D-4D4E-A6C4-925B957E20E5} = {A12107A8-0C7D-4D4E-A6C4-925B957E20E5}
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Common", "Strings.Common\Strings.Common.csproj", "{FF95F3A0-95FB-4730-B228-23A43FCA07D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Common.Test", "Strings.Common.Test\Strings.Common.Test.csproj", "{7CBFD57F-2524-4F18-8E40-76D65B5CD223}"
@@ -40,6 +35,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Typescript.Test", "
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Strings.Tsql", "Strings.Tsql\Strings.Tsql.csproj", "{C706C460-EB7D-4C9C-A845-6526DF05A4E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D764F383-C5EE-4836-9B03-7137178DCB25}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "..\examples", "{3E6C0B74-9F95-4991-8F6A-8EFD20C8EE03}"
+	ProjectSection(SolutionItems) = preProject
+		example.cs = example.cs
+		example.cshtml = example.cshtml
+		example.ts = example.ts
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

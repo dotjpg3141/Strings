@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Strings.CSharp": {
+      "commandName": "Project",
+      "commandLineArgs": "--single \"$(SolutionDir)..\\examples\\example.cs\" \"$(SolutionDir)..\\examples\\result-cs.csv\""
+    }
+  }
+}

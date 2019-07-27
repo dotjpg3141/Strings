@@ -10,16 +10,12 @@ namespace Strings.Common
 	{
 		public static int Main(string[] args, Func<string, IStringExtractor> createExtractor)
 		{
-			if (args.Length != 2)
+			if (!TryParseArguments(args, out var inputPaths, out var output))
 			{
-				Console.Error.WriteLine("Expected exactly two arguments: <input-file> <output-file>");
-				return 1;
+				return -1;
 			}
 
-			var inputPaths = File.ReadAllLines(args[0]);
-			var outputPath = args[1];
-
-			using (var output = new StreamWriter(outputPath, true, Encoding.UTF8))
+			using (output)
 			{
 				foreach (var input in inputPaths)
 				{
@@ -40,6 +36,29 @@ namespace Strings.Common
 			}
 
 			return 0;
+		}
+
+		private static bool TryParseArguments(string[] args, out string[] inputPaths, out TextWriter output)
+		{
+			if (args.Length == 2)
+			{
+				inputPaths = File.ReadAllLines(args[0]);
+				output = new StreamWriter(args[1], true, Encoding.UTF8);
+			}
+			else if (args.Length == 3 && args[0] == "--single")
+			{
+				inputPaths = new[] { args[1] };
+				output = Console.Out;
+			}
+			else
+			{
+				inputPaths = null;
+				output = null;
+				Console.Error.WriteLine("Expected exactly two or three arguments: [--single] <input-file> <output-file>");
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

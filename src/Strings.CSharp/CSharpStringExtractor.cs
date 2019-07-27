@@ -50,7 +50,7 @@ namespace Strings.CSharp
 			// nop
 		}
 
-		public IEnumerable<SearchResult> Search()
+		public IEnumerable<SearchResult> Search(CancellationToken cancelToken = default)
 		{
 			foreach (var token in SyntaxFactory.ParseTokens(this.SourceText.ToString()))
 			{
@@ -83,11 +83,6 @@ namespace Strings.CSharp
 						break;
 				}
 			}
-		}
-
-		public IEnumerable<SearchResult> Search(CancellationToken cancelToken = default)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }
