@@ -69,6 +69,15 @@ namespace Strings.CSharp.Test
 			Assert.AreEqual(source2, result.Source2);
 		}
 
+		[TestMethod]
+		public void CommentTest()
+		{
+			var results = GetResults("/*a*/\"b\"//c");
+			Assert.AreEqual(1, results.Length);
+
+			Assert.AreEqual("\"b\"", results[0].Text);
+		}
+
 		private static SearchResult[] GetResults(string text)
 		{
 			var extractor = CSharpStringExtractor.FromString(text);

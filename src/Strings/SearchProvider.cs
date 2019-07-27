@@ -26,7 +26,7 @@ namespace Strings
 			},
 			new SearchProvider() {
 				Name = "typescript",
-				FileExtensions = new[] { ".ts", ".tsx" },
+				FileExtensions = new[] { ".ts", ".tsx", ".js", ".jsx", ".json" },
 				FileName = "node",
 				ArgumentsFormat = "components/typescript/app.js {0} {1}",
 				IsRelativeFileName = true,

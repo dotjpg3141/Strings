@@ -151,8 +151,8 @@ namespace Strings.Common
 			WriteCsvCell(writer, System.IO.Path.GetFullPath(this.Path));
 			WriteCsvCell(writer, this.Extension);
 			WriteCsvCell(writer, text.Length);
-			WriteCsvCell(writer, this.Line);
-			WriteCsvCell(writer, this.Character);
+			WriteCsvCell(writer, this.Line + 1);
+			WriteCsvCell(writer, this.Character + 1);
 			WriteCsvCell(writer, this.Source1);
 			WriteCsvCell(writer, this.Source2);
 			WriteCsvCell(writer, this.Source3);

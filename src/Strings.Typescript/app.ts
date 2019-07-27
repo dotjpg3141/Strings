@@ -31,6 +31,13 @@ async function main(args: string[]) {
 	stream.close();
 }
 
+function isAccessExpression(node: ts.Node) {
+	let kind = node && node.kind;
+	return kind == ts.SyntaxKind.PropertyAccessExpression
+		|| kind == ts.SyntaxKind.ElementAccessExpression
+		|| kind == ts.SyntaxKind.PropertyAssignment;
+}
+
 function extractStringLiterals(source: ts.SourceFile) {
 	const result: SearchResult[] = [];
 	visitNode(source);
@@ -41,6 +48,28 @@ function extractStringLiterals(source: ts.SourceFile) {
 			case ts.SyntaxKind.StringLiteral:
 			case ts.SyntaxKind.TemplateExpression:
 			case ts.SyntaxKind.FirstTemplateToken:
+
+				let parents = getSelfAndParents(node);
+				let accessExpression = parents.find(isAccessExpression);
+				if (accessExpression) {
+					break;
+				}
+
+				let parent = node.parent;
+				if (parent) {
+					if (ts.isLiteralTypeNode(parent)
+						|| ts.isPropertySignature(parent)
+						|| ts.isPropertyDeclaration(parent)
+						|| ts.isMethodDeclaration(parent)
+						|| ts.isMethodSignature(parent)
+						|| ts.isModuleDeclaration(parent)
+						|| ts.isImportDeclaration(parent)
+						|| ts.isExportDeclaration(parent)
+						|| ts.isExpressionStatement(parent)) {
+						break;
+					}
+				}
+
 				report(node);
 				break;
 		}
@@ -48,15 +77,24 @@ function extractStringLiterals(source: ts.SourceFile) {
 		ts.forEachChild(node, visitNode);
 	}
 
+	function getSelfAndParents(node: ts.Node): ts.Node[] {
+		let result: ts.Node[] = [];
+		while (node) {
+			result.push(node);
+			node = node.parent;
+		}
+		return result;
+	}
+
 	function report(node: ts.Node) {
 		const item = new SearchResult();
 		item.path = source.fileName;
-		item.startIndex = node.getFullStart();
-		item.endIndex = item.startIndex + node.getFullWidth();
+		item.startIndex = node.getStart();
+		item.endIndex = item.startIndex + node.getWidth();
 		const { line, character } = source.getLineAndCharacterOfPosition(item.startIndex);
 		item.line = line;
 		item.character = character;
-		item.text = node.getFullText();
+		item.text = node.getText();
 		item.source1 = "typescript";
 		item.source2 = ts.SyntaxKind[node.kind];
 		item.source3 = "";
