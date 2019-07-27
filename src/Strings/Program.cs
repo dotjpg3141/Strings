@@ -20,15 +20,16 @@ namespace Strings
 					args = new[] { @"--input=..\..\..\..\examples" };
 				}
 
-				Run(args);
-				Console.WriteLine("Done.");
+				int returnCode = Run(args);
+				Console.WriteLine("Done. RC = " + returnCode);
 				Console.ReadKey();
+				return returnCode;
 			}
 			else
 			{
 				try
 				{
-					Run(args);
+					return Run(args);
 				}
 				catch (Exception ex)
 				{
@@ -36,15 +37,18 @@ namespace Strings
 					return 4;
 				}
 			}
-
-			return 0;
 		}
 
-		private static void Run(string[] args)
+		private static int Run(string[] args)
 		{
-			ParseArguments(args, out var input, out string output, out var patterns);
+			if (!TryParseArguments(args, out var input, out string output, out var patterns))
+			{
+				return 1;
+			}
+
 			var searchResult = ExecuteSearch(input, patterns);
 			WriteOutputFile(searchResult, output);
+			return 1;
 		}
 
 		private static void WriteOutputFile(IEnumerable<SearchResult> result, string path)
@@ -86,27 +90,40 @@ namespace Strings
 			return searchResult;
 		}
 
-		private static void ParseArguments(string[] args, out string[] input, out string output, out string[] patterns)
+		private static bool TryParseArguments(string[] args, out string[] input, out string output, out string[] patterns)
 		{
 			input = new[] { Environment.CurrentDirectory };
 			output = "result.csv";
-			patterns = new[] { "*" };
+			patterns = new[] { "*.*" };
+
+			bool printUsage = args.Select(item => item.ToLowerInvariant()).Intersect(new[] { "-h", "--help", "/help", "/?" }).Any();
+			if (printUsage)
+			{
+				Console.Error.WriteLine("Usage:");
+			}
 
 			foreach (var arg in args)
 			{
 				var match = arg.ToLowerInvariant();
 
-				var knownArgument = TryMatchArray("input", ref input)
-								 || TryMatchParameter("output", ref output)
-								 || TryMatchArray("patterns", ref patterns);
+				var knownArgument = TryMatchArray("input", ref input, "Input directories")
+								 || TryMatchParameter("output", ref output, "Output file (.csv)")
+								 || TryMatchArray("patterns", ref patterns, "Included file patterns");
 
-				if (!knownArgument)
+				if (!knownArgument && !printUsage)
 				{
 					Console.Error.WriteLine("Invalid argument: " + arg);
 				}
 
-				bool TryMatchParameter(string name, ref string parameter)
+				bool TryMatchParameter(string name, ref string parameter, string description)
 				{
+					if (printUsage && description != null)
+					{
+						Console.Error.WriteLine($"\t--{name}=<value>");
+						Console.Error.WriteLine($"\t\t{description}");
+						Console.Error.WriteLine("\t\tDefault: " + parameter);
+					}
+
 					var prefix = "--" + name + "=";
 					if (match.StartsWith(prefix))
 					{
@@ -119,10 +136,17 @@ namespace Strings
 					}
 				}
 
-				bool TryMatchArray(string name, ref string[] array)
+				bool TryMatchArray(string name, ref string[] array, string description)
 				{
+					if (printUsage && description != null)
+					{
+						Console.Error.WriteLine($"\t--{name}=<value1,value2,...>");
+						Console.Error.WriteLine($"\t\t{description}");
+						Console.Error.WriteLine("\t\tDefault: " + string.Join(",", array));
+					}
+
 					string parameter = null;
-					if (!TryMatchParameter(name, ref parameter))
+					if (!TryMatchParameter(name, ref parameter, null))
 					{
 						return false;
 					}
@@ -136,6 +160,8 @@ namespace Strings
 					return true;
 				}
 			}
+
+			return !printUsage;
 		}
 	}
 }
