@@ -6,8 +6,7 @@ namespace Strings.CSharp
 	{
 		private static int Main(string[] args)
 		{
-			return CommandLineInterface.Main(
-				args, inputFile => CSharpStringExtractor.FromFile(inputFile).Search());
+			return CommandLineInterface.Main(args, CSharpStringExtractor.FromFile);
 		}
 	}
 }

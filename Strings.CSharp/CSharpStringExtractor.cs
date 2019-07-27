@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -10,7 +11,7 @@ using Strings.Common;
 
 namespace Strings.CSharp
 {
-	public class CSharpStringExtractor
+	public sealed class CSharpStringExtractor : IStringExtractor
 	{
 		public SourceText SourceText { get; private set; }
 
@@ -42,6 +43,11 @@ namespace Strings.CSharp
 				Path = null,
 				SourceText = SourceText.From(text),
 			};
+		}
+
+		public void Dispose()
+		{
+			// nop
 		}
 
 		public IEnumerable<SearchResult> Search()
@@ -77,6 +83,11 @@ namespace Strings.CSharp
 						break;
 				}
 			}
+		}
+
+		public IEnumerable<SearchResult> Search(CancellationToken cancelToken = default)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

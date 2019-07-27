@@ -8,7 +8,7 @@ namespace Strings.Common
 {
 	public static class CommandLineInterface
 	{
-		public static int Main(string[] args, Func<string, IEnumerable<SearchResult>> search)
+		public static int Main(string[] args, Func<string, IStringExtractor> createExtractor)
 		{
 			if (args.Length != 2)
 			{
@@ -23,9 +23,12 @@ namespace Strings.Common
 			{
 				foreach (var input in inputPaths)
 				{
-					foreach (var result in search(input))
+					using (var extractor = createExtractor(input))
 					{
-						result.WriteTo(output);
+						foreach (var result in extractor.Search())
+						{
+							result.WriteTo(output);
+						}
 					}
 				}
 			}

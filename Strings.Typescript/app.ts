@@ -37,9 +37,6 @@ function extractStringLiterals(source: ts.SourceFile) {
 	return result;
 
 	function visitNode(node: ts.Node) {
-
-		console.error(ts.SyntaxKind[node.kind], node.getFullText());
-
 		switch (node.kind) {
 			case ts.SyntaxKind.StringLiteral:
 			case ts.SyntaxKind.TemplateExpression:

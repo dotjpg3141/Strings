@@ -10,7 +10,7 @@ using Strings.Common;
 
 namespace Strings.Razor
 {
-	public sealed class RazorStringExtractor : IDisposable
+	public sealed class RazorStringExtractor : IStringExtractor
 	{
 		public string Path { get; set; }
 		public TextReader Reader { get; private set; }

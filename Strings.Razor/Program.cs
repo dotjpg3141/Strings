@@ -6,8 +6,7 @@ namespace Strings.Razor
 	{
 		private static int Main(string[] args)
 		{
-			return CommandLineInterface.Main(
-				args, inputFile => RazorStringExtractor.FromFile(inputFile).Search());
+			return CommandLineInterface.Main(args, RazorStringExtractor.FromFile);
 		}
 	}
 }
