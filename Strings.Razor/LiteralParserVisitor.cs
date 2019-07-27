@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Web.Razor.Parser;
 using System.Web.Razor.Parser.SyntaxTree;
 using System.Web.Razor.Tokenizer.Symbols;
@@ -13,6 +15,7 @@ namespace Strings.Razor
 	{
 		public string Path { get; set; }
 		public List<SearchResult> Results { get; } = new List<SearchResult>();
+		public HashSet<int> ExcludedLines { get; set; }
 
 		private ParseState parseState = ParseState.Default;
 		private List<HtmlSymbol> symbolsWithoutWhitespace = new List<HtmlSymbol>();
@@ -147,6 +150,7 @@ namespace Strings.Razor
 			{
 				string source2;
 				string source3;
+
 				switch (this.textState)
 				{
 					case ParseState.Default:
@@ -163,43 +167,97 @@ namespace Strings.Razor
 					default:
 						throw new InvalidOperationException();
 				}
+				var results =
+					from match in GetMatches(this.textSymbols)
+					select new SearchResult()
+					{
+						Path = Path,
+						StartIndex = match.AbsoluteStartIndex,
+						EndIndex = match.AbsoluteEndIndex,
+						Line = match.LineIndex,
+						Character = match.CharIndex,
+						Text = match.Text,
+						Source1 = "razor",
+						Source2 = source2,
+						Source3 = source3,
+					};
 
-				HandleTextSymbols(this.textSymbols, source2, source3);
+				this.Results.AddRange(results);
 			}
 
 			this.textSymbols = null;
 		}
 
-		private void HandleTextSymbols(List<ISymbol> symbols, string source2, string source3)
+		private IEnumerable<TextMatch> GetMatches(List<ISymbol> symbols)
 		{
-			var content = string.Concat(symbols.Select(sym => sym.Content));
-			if (string.IsNullOrWhiteSpace(content))
+			var matches =
+				(from symbol in symbols
+				 from match in SplitTextByLine(symbol)
+				 select match);
+
+			var currentMatches = new List<TextMatch>();
+			TextMatch next;
+
+			foreach (var match in matches)
 			{
-				return;
+				if (this.ExcludedLines.Contains(match.LineIndex))
+				{
+					if (TryGetNextMatch(out next))
+					{
+						yield return next;
+					}
+					continue;
+				}
+
+				if (currentMatches.Count != 0 || IsNonWhitespaceMatch(match))
+				{
+					currentMatches.Add(match);
+				}
 			}
 
-			var firstSymbol = symbols.First();
-			var lastSymbol = symbols.Last();
-
-			var startIndex = firstSymbol.Start.AbsoluteIndex;
-			var endIndex = lastSymbol.Start.AbsoluteIndex + lastSymbol.Content.Length;
-
-			var location = firstSymbol.Start;
-
-			var result = new SearchResult()
+			if (TryGetNextMatch(out next))
 			{
-				Path = Path,
-				StartIndex = startIndex,
-				EndIndex = endIndex,
-				Line = location.LineIndex,
-				Character = location.CharacterIndex,
-				Text = content,
-				Source1 = "razor",
-				Source2 = source2,
-				Source3 = source3,
-			};
+				yield return next;
+			}
 
-			this.Results.Add(result);
+			bool TryGetNextMatch(out TextMatch match)
+			{
+				Debug.Assert(currentMatches.Count == 0 || !string.IsNullOrWhiteSpace(currentMatches.First().Text));
+
+				var lastIndex = currentMatches.FindLastIndex(IsNonWhitespaceMatch);
+				if (lastIndex == -1)
+				{
+					match = default(TextMatch);
+					return false;
+				}
+
+				var text = new StringBuilder();
+				foreach (var item in currentMatches.Take(lastIndex + 1))
+				{
+					text.Append(item.Text);
+				}
+
+				match = currentMatches[0];
+				match.Text = text.ToString();
+				match.AbsoluteEndIndex = currentMatches[lastIndex].AbsoluteEndIndex;
+
+				var whitespace = Patterns.TrailingWhitespaceExceptNewLine.Match(match.Text);
+				if (whitespace.Success)
+				{
+					var offset = whitespace.Length;
+					match.AbsoluteStartIndex += offset;
+					match.CharIndex += offset;
+					match.Text = match.Text.Substring(offset);
+				}
+
+				currentMatches.Clear();
+				return true;
+			}
+
+			bool IsNonWhitespaceMatch(TextMatch textMatch)
+			{
+				return !string.IsNullOrWhiteSpace(textMatch.Text);
+			}
 		}
 
 		private enum ParseState
@@ -208,6 +266,57 @@ namespace Strings.Razor
 			InsideTag,
 			InsideSingleQuoteAttribute,
 			InsideDoubleQuoteAttribute,
+		}
+
+		internal static IEnumerable<TextMatch> SplitTextByLine(ISymbol symbol)
+		{
+			int firstAbsoluteIndex = symbol.Start.AbsoluteIndex;
+			int lineIndex = symbol.Start.LineIndex;
+			var content = symbol.Content;
+
+			int index = 0;
+
+			while (true)
+			{
+				var match = Patterns.NewLine.Match(content, index);
+				if (!match.Success)
+				{
+					break;
+				}
+
+				yield return NextResult(match.Length);
+				index = match.Index + match.Length;
+			}
+
+			if (index != content.Length)
+			{
+				yield return NextResult(content.Length - index);
+			}
+
+			TextMatch NextResult(int length)
+			{
+				var absoluteIndex = firstAbsoluteIndex + index;
+				var text = content.Substring(index, length);
+				var charIndex = index == 0 ? symbol.Start.CharacterIndex : 0;
+
+				return new TextMatch()
+				{
+					AbsoluteStartIndex = absoluteIndex,
+					AbsoluteEndIndex = absoluteIndex + text.Length,
+					LineIndex = lineIndex++,
+					CharIndex = charIndex,
+					Text = text
+				};
+			}
+		}
+
+		internal struct TextMatch
+		{
+			public int AbsoluteStartIndex { get; set; }
+			public int AbsoluteEndIndex { get; set; }
+			public int LineIndex { get; set; }
+			public int CharIndex { get; set; }
+			public string Text { get; set; }
 		}
 	}
 }

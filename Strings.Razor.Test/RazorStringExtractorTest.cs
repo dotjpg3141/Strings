@@ -17,7 +17,7 @@ namespace Strings.Razor.Test
 		}
 
 		[DataTestMethod]
-		//[DataRow("@model My.Class")]
+		[DataRow("@model My.Class")]
 		[DataRow("@using My.Namespace")]
 		[DataRow("<h1>")]
 		[DataRow("</h1>")]
@@ -26,7 +26,8 @@ namespace Strings.Razor.Test
 		[DataRow("@foo")]
 		[DataRow("@{ var hello = 1; }")]
 		[DataRow("@* Hello World *@")]
-		[DataRow(@"<a asp-route-id=""@item.ID""></a>")]
+		[DataRow("<a asp-route-id=\"@item.ID\"></a>")]
+		[DataRow("@using MyNamespace;")]
 		public void NoResult(string text)
 		{
 			var results = GetResults(text);
@@ -44,7 +45,6 @@ namespace Strings.Razor.Test
 		[DataRow(@"@{ $@""Hello{0}World""		}", 3, 20, "razor", "csharp", "InterpolatedStringToken")]
 		[DataRow(@"@{ $@""Hello{0}World{1}.""	}", 3, 24, "razor", "csharp", "InterpolatedStringToken")]
 		[DataRow(@"<div a=""@(""Hello World!"")""></div>", 10, 24, "razor", "csharp", "StringLiteralToken")]
-		// [DataRow("@using MyNamespace;", 19, 20, "razor", "text", "")]
 		public void SingleResult(string text, int startIndex, int endIndex, string source1, string source2, string source3)
 		{
 			var results = GetResults(text);
@@ -83,6 +83,32 @@ namespace Strings.Razor.Test
 			Assert.AreEqual("CC", results[2].Text);
 			Assert.AreEqual("attribute", results[2].Source2);
 			Assert.AreEqual("a", results[2].Source3);
+		}
+
+		[DataTestMethod]
+		[DataRow("\n", 1)]
+		[DataRow("\r\n", 1)]
+		[DataRow("\n\n", 2)]
+		[DataRow("\r\n\r\n", 2)]
+		public void NewLineAndAtSignTest(string lineSeperator, int newLineCount)
+		{
+			var text = $"@using Foo{lineSeperator}Hello{lineSeperator}@model Bar{lineSeperator}World{lineSeperator}@foo bar";
+			var results = GetResults(text);
+
+			var assertMessage = lineSeperator.Replace("\r", "\\r").Replace("\n", "\\n");
+			assertMessage += " (" + newLineCount + " lines)";
+
+			Assert.AreEqual(3, results.Length, assertMessage);
+
+
+			Assert.AreEqual("Hello", results[0].Text.Trim(), assertMessage);
+			Assert.AreEqual(newLineCount * 1, results[0].Line, assertMessage);
+
+			Assert.AreEqual("World", results[1].Text.Trim(), assertMessage);
+			Assert.AreEqual(newLineCount * 3, results[1].Line, assertMessage);
+
+			Assert.AreEqual("bar", results[2].Text.Trim(), assertMessage);
+			Assert.AreEqual(newLineCount * 4, results[2].Line, assertMessage);
 		}
 
 		private static SearchResult[] GetResults(string text)

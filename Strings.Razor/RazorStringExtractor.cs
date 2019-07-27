@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web.Razor.Parser;
 using Strings.Common;
-using Strings.CSharp;
 
 namespace Strings.Razor
 {
@@ -38,8 +39,12 @@ namespace Strings.Razor
 
 		public IEnumerable<SearchResult> Search(CancellationToken cancelToken = default(CancellationToken))
 		{
-			var visitor = new LiteralParserVisitor() { Path = Path };
-			visitor.CancelToken = cancelToken;
+			var visitor = new LiteralParserVisitor()
+			{
+				Path = Path,
+				CancelToken = cancelToken,
+				ExcludedLines = GetExcludedLines(),
+			};
 
 			var parser = new RazorParser(new CSharpCodeParser(), new HtmlMarkupParser());
 			parser.Parse(this.Reader, visitor);
@@ -47,6 +52,27 @@ namespace Strings.Razor
 			visitor.EndText();
 
 			return visitor.Results;
+		}
+
+		private HashSet<int> GetExcludedLines()
+		{
+			var fullText = this.Reader.ReadToEnd();
+			this.Reader.Dispose();
+			this.Reader = new StringReader(fullText);
+
+			var lines = Patterns.NewLine.Split(fullText);
+			var excludedLines = new HashSet<int>();
+
+			for (int i = 0; i < lines.Length; i++)
+			{
+				string line = lines[i];
+				if (Patterns.ExcludedRazorLines.IsMatch(line))
+				{
+					excludedLines.Add(i);
+				}
+			}
+
+			return excludedLines;
 		}
 	}
 }
