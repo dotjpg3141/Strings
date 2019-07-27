@@ -14,6 +14,12 @@ namespace Strings
 		{
 			if (Debugger.IsAttached)
 			{
+				if (args.Length == 0)
+				{
+					Console.Error.WriteLine("Using debugging command line arguments");
+					args = new[] { @"--input=..\..\..\..\examples" };
+				}
+
 				Run(args);
 				Console.WriteLine("Done.");
 				Console.ReadKey();
@@ -101,7 +107,7 @@ namespace Strings
 
 				bool TryMatchParameter(string name, ref string parameter)
 				{
-					var prefix = "-" + name + "=";
+					var prefix = "--" + name + "=";
 					if (match.StartsWith(prefix))
 					{
 						parameter = arg.Substring(prefix.Length);

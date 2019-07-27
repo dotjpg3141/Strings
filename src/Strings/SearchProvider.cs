@@ -31,6 +31,12 @@ namespace Strings
 				ArgumentsFormat = "components/typescript/app.js {0} {1}",
 				IsRelativeFileName = true,
 			},
+			new SearchProvider() {
+				Name = "tsql",
+				FileExtensions = new[]{ ".sql", ".csql" },
+				FileName = "components/tsql/Strings.Tsql.exe",
+				ArgumentsFormat = "{0} {1}",
+			}
 		};
 
 		private static readonly Dictionary<string, SearchProvider> ProvidersByExtension =
