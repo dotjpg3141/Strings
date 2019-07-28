@@ -21,7 +21,7 @@ namespace Strings
 				}
 
 				int returnCode = Run(args);
-				Console.WriteLine("Done. RC = " + returnCode);
+				Console.Error.WriteLine("Done. RC = " + returnCode);
 				Console.ReadKey();
 				return returnCode;
 			}
@@ -48,7 +48,7 @@ namespace Strings
 
 			var searchResult = ExecuteSearch(cli.Input, cli.Patterns, cli.Sync);
 			WriteOutputFile(searchResult, cli.Output);
-			return 1;
+			return 0;
 		}
 
 		private static void WriteOutputFile(IEnumerable<SearchResult> result, string path)
