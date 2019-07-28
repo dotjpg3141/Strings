@@ -114,7 +114,12 @@ namespace Strings
 								 || TryMatchArray("patterns", ref result.Patterns, "Included file patterns")
 								 || TryMatchFlag("sync", ref result.Sync, "Synchronized or parallel execution");
 
-				if (!knownArgument && !printUsage)
+				if (printUsage)
+				{
+					break;
+				}
+
+				if (!knownArgument)
 				{
 					Console.Error.WriteLine("Invalid argument: " + arg);
 				}
