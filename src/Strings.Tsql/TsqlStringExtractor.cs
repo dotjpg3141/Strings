@@ -26,7 +26,7 @@ namespace Strings.Tsql
 
 			return new TsqlStringExtractor()
 			{
-				Stream = new AntlrInputStream(reader),
+				Stream = new AntlrCaseInsensitiveInputStream(reader),
 				Path = fileName,
 				internalReader = reader,
 			};
@@ -36,7 +36,7 @@ namespace Strings.Tsql
 		{
 			return new TsqlStringExtractor()
 			{
-				Stream = new AntlrInputStream(text),
+				Stream = new AntlrCaseInsensitiveInputStream(text),
 			};
 		}
 
